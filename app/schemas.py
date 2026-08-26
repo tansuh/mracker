@@ -1,7 +1,7 @@
 from uuid import UUID
 from pydantic import BaseModel, field_validator
 
-class EntryInpuit(BaseModel): 
+class EntryInput(BaseModel): 
 
     account_id: UUID
     amount: int
