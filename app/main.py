@@ -17,7 +17,10 @@ from app.services.ledger import (
     get_balance,
 )
 
+from app.admin import router as admin_router
+
 app = FastAPI(title="Mracker")
+app.include_router(admin_router)
 
 
 @app.post("/transactions", response_model=TransactionResponse, status_code=201)
