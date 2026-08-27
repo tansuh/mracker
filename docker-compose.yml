@@ -5,11 +5,47 @@ services:
     environment:
       POSTGRES_USER: ledger
       POSTGRES_PASSWORD: ledger
-      POSTGRES_DB: ledger
+      POSTGRES_DB: mracker
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build: .
+    command: python -c "from app.database import Base, engine; from app import models; Base.metadata.create_all(engine); print('schema ready')"
+    environment:
+      DATABASE_URL: postgresql://ledger:ledger@postgres:5432/mracker
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://ledger:ledger@postgres:5432/mracker
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    build: .
+    command: python -m app.worker
+    environment:
+      DATABASE_URL: postgresql://ledger:ledger@postgres:5432/mracker
+      WEBHOOK_ENDPOINT_URL: ${WEBHOOK_ENDPOINT_URL}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   pgdata:
