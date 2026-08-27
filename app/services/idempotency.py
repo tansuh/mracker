@@ -55,7 +55,7 @@ def create_transaction_idempotent(
 
     # we won the claim - actually do the work
     try:
-        txn = post_transaction(db, entries=entries, tx_type=tx_type, metadata=metadata)
+        txn = post_transaction(db, entries=entries, tx_type=tx_type, metadata={**(metadata or {}), "_idempotency_key": idempotency_key})
     except Exception:
         # the operation never completed - release the key so a corrected
         # retry isn't blocked forever. 

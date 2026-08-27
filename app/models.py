@@ -9,6 +9,7 @@ from sqlalchemy import (
     Index,
     String,
     func,
+    Integer,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
@@ -65,3 +66,21 @@ class IdempotencyKey(Base):
     transaction_id = Column(UUID(as_uuid=True), ForeignKey("transactions.id"), nullable=True)
     status = Column(String, nullable=False, default="processing")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class WebhookEvent(Base):
+    __tablename__ = "webhook_events"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    transaction_id = Column(UUID(as_uuid=True), ForeignKey("transactions.id"), nullable=False)
+    event_type = Column(String, nullable=False)
+    payload = Column(JSONB, nullable=False)
+    status = Column(String, nullable=False, default="pending")  # pending | delivered | failed
+    attempts = Column(Integer, nullable=False, default=0)
+    next_attempt_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    last_error = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("ix_webhook_events_status_next_attempt_at", "status", "next_attempt_at"),
+    )

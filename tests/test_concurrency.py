@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from sqlalchemy.orm import sessionmaker
 
-from app.models import Account, IdempotencyKey, LedgerEntry, Transaction
+from app.models import Account, IdempotencyKey, LedgerEntry, Transaction, WebhookEvent
 from app.schemas import EntryInput
 from app.services.idempotency import create_transaction_idempotent
 from app.services.ledger import get_balance
@@ -79,6 +79,9 @@ def test_concurrent_requests_with_same_idempotency_key_create_exactly_one_transa
         cleanup = Session()
         cleanup.query(LedgerEntry).filter(
             LedgerEntry.account_id.in_([customer_id, cash_id])
+        ).delete(synchronize_session=False)
+        cleanup.query(WebhookEvent).filter(
+            WebhookEvent.transaction_id.in_(results)
         ).delete(synchronize_session=False)
         cleanup.query(IdempotencyKey).filter(
             IdempotencyKey.key == idempotency_key

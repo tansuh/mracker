@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.models import Account, LedgerEntry, Transaction 
 from app.schemas import EntryInput
 
+from app.services.webhooks import enqueue_transaction_posted_event
+
 class LedgerError(Exception):
     """default class for errors"""
 
@@ -78,6 +80,8 @@ def post_transaction(
             )
         )
 
+    enqueue_transaction_posted_event(db, txn, entries)
+    
     try:
         db.commit()
     except IntegrityError:
