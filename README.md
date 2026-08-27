@@ -1,2 +1,2 @@
 # mracker
-Financial Ledger and and Payment Processing API 
+A double entry financial ledger and payment processing API
