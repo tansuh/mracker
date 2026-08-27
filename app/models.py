@@ -56,3 +56,12 @@ class LedgerEntry(Base):
 
     transaction = relationship("Transaction", back_populates="entries")
     account = relationship("Account", back_populates="entries")
+
+class IdempotencyKey(Base):
+    __tablename__ = "idempotency_keys"
+
+    key = Column(String, primary_key=True)
+    request_fingerprint = Column(String, nullable=False)
+    transaction_id = Column(UUID(as_uuid=True), ForeignKey("transactions.id"), nullable=True)
+    status = Column(String, nullable=False, default="processing")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

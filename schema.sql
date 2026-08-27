@@ -27,3 +27,11 @@ CREATE TABLE ledger_entries (
 
 CREATE INDEX index_ledger_entries_with_id_ts
     ON ledger_entries (account_id, created_at);
+
+CREATE TABLE idempotency_keys (
+    key TEXT PRIMARY KEY,
+    request_fingerprint TEXT NOT NULL,
+    transaction_id UUID REFERENCES transactions(id),
+    status TEXT NOT NULL DEFAULT 'processing',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
