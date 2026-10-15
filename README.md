@@ -195,3 +195,9 @@ The suite covers:
 - concurrent requests sharing an idempotency key
 
 CI runs the tests and a Docker build on every push to `main` and on every pull request.
+
+## Limitations / Items left to do 
+1. No authentication. Anyone who can reach it can move money and see every account.
+2. Too few endpoints. You can't create or list accounts, fetch a single transaction, or list an account's history. A client can post money but can barely read anything back.
+3. No overdraft protection. A customer account can go negative, which a payments API has to prevent.
+4. The responses are thin. A transaction response has no type, metadata or created_at, and the balance reponse has no currency
